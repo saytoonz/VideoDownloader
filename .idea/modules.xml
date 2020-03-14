@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/NinjaBrowser.iml" filepath="$PROJECT_DIR$/NinjaBrowser.iml" />
+      <module fileurl="file://$PROJECT_DIR$/VideoDownloader.iml" filepath="$PROJECT_DIR$/VideoDownloader.iml" group="VideoDownloader" />
+      <module fileurl="file://$PROJECT_DIR$/app/VideoDownloader-app.iml" filepath="$PROJECT_DIR$/app/VideoDownloader-app.iml" group="VideoDownloader/app" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bettervideoplayer/bettervideoplayer.iml" filepath="$PROJECT_DIR$/bettervideoplayer/bettervideoplayer.iml" group="VideoDownloader/bettervideoplayer" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="fill_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/white"
+        android:elevation="4.0dip"
+        app:title="@string/video_downloader"
+        app:titleTextColor="@color/black"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="0.0dip"
+        android:layout_weight="1.0">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/guide_image_0"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:layout_gravity="center_horizontal"
+                android:adjustViewBounds="true"
+                android:padding="16dp"
+                app:srcCompat="@drawable/ic_buzz" />
+
+            <LinearLayout
+                android:id="@id/container"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/content_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter or Paste link"
+                    android:maxLines="1" />
+
+                <LinearLayout
+                    android:id="@+id/check_url_container"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="16.0dip"
+                    android:paddingRight="16.0dip">
+
+                    <Button
+                        android:id="@+id/check_url"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0.0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.0"
+                        android:text="@string/check_url"
+                        android:textAllCaps="false" />
+
+                    <Button
+                        android:id="@+id/paste_url"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="0.0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24.0dip"
+                        android:layout_marginLeft="24.0dip"
+                        android:layout_weight="1.0"
+                        android:text="@string/paste_url"
+                        android:textAllCaps="false" />
+                </LinearLayout>
+
+
+<!--                <RadioGroup-->
+<!--                    android:id="@+id/radiogroup_topbuzz"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="16dp">-->
+
+<!--                    <RadioButton-->
+<!--                        android:id="@+id/rbtn_144"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="144p" />-->
+
+<!--                    <RadioButton-->
+<!--                        android:id="@+id/rbtn_240"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="240p" />-->
+
+<!--                    <RadioButton-->
+<!--                        android:id="@+id/rbtn_380"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="380p" />-->
+
+<!--                    <RadioButton-->
+<!--                        android:id="@+id/rbtn_480"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="480p" />-->
+
+<!--                    <RadioButton-->
+<!--                        android:id="@+id/rbtn_720"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="720p" />-->
+<!--                </RadioGroup>-->
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/guide_0"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16.0dip"
+                android:paddingLeft="16.0dip"
+                android:paddingRight="16.0dip"
+                android:text="@string/how_to_get_the_url"
+                android:textSize="30.0sp" />
+
+            <TextView
+                android:id="@+id/guide_1"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16.0dip"
+                android:paddingLeft="16.0dip"
+                android:paddingRight="16.0dip"
+                android:text="@string/open_facebook_app_click_copy_link"
+                android:textSize="20.0sp" />
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/guide_image_1"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:background="#8a000000"
+                    android:padding="1.0dip"
+                    android:paddingLeft="1.0dip"
+                    android:paddingTop="1.0dip"
+                    android:paddingRight="1.0dip"
+                    android:paddingBottom="1.0dip"
+                    android:src="@drawable/buzz_slide" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/guide_2"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16.0dip"
+                android:paddingRight="16.0dip"
+                android:text="@string/automatically_open"
+                android:textSize="20.0sp" />
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="16.0dip">
+
+                <ImageView
+                    android:id="@+id/guide_image_2"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:background="#8a000000"
+                    android:padding="1.0dip"
+                    android:paddingLeft="1.0dip"
+                    android:paddingTop="1.0dip"
+                    android:paddingRight="1.0dip"
+                    android:paddingBottom="1.0dip"
+                    android:src="@drawable/mvp_downloading" />
+            </FrameLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

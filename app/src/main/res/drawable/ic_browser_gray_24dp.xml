@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector android:tint="@color/color_tint_tab_action" android:height="24.0dip" android:width="24.0dip" android:viewportWidth="1024.0" android:viewportHeight="1024.0"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="#ffffffff" android:pathData="M512,950.04c-244.62,0 -443.73,-199.11 -443.73,-443.73s199.11,-443.73 443.73,-443.73 443.73,199.11 443.73,443.73 -199.11,443.73 -443.73,443.73zM512,864.71c199.11,0 352.71,-159.29 352.71,-352.71s-159.29,-352.71 -352.71,-352.71 -352.71,159.29 -352.71,352.71 153.6,352.71 352.71,352.71z" />
+    <path android:fillColor="#ffffffff" android:pathData="M512,950.04c-125.16,0 -216.18,-199.11 -216.18,-443.73s85.33,-443.73 216.18,-443.73 216.18,199.11 216.18,443.73 -91.02,443.73 -216.18,443.73zM512,864.71c62.58,0 125.16,-159.29 125.16,-352.71s-68.27,-352.71 -125.16,-352.71 -125.16,159.29 -125.16,352.71 62.58,352.71 125.16,352.71z" />
+    <path android:fillColor="#ffffffff" android:pathData="M113.78,438.04v-85.33h796.44v85.33zM113.78,665.6v-85.33h796.44v85.33z" />
+</vector>

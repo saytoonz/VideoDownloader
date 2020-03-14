@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/repost_on_fb"
+        android:icon="@drawable/ic_fb_gray_24dp"
+        android:orderInCategory="100"
+        android:title="@string/repost_on_fb"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/repost_on_ig"
+        android:icon="@drawable/ic_ig_gray_24dp"
+        android:orderInCategory="100"
+        android:title="@string/repost_on_ig"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/share"
+        android:icon="@drawable/ic_share_black_24dp"
+        android:orderInCategory="100"
+        android:title="@string/share"
+        app:iconTint="@color/color_tint_tab_action"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/view_pic"
+        android:icon="@drawable/ic_photo_gray_24dp"
+        android:orderInCategory="100"
+        android:title="@string/view_picture"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/visit_site"
+        android:icon="@drawable/ic_browser_gray_24dp"
+        android:orderInCategory="100"
+        android:title="@string/visit_the_website"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/delete"
+        android:icon="@drawable/ic_delete_forever_gray_24dp"
+        android:orderInCategory="100"
+        android:title="@string/delete"
+        app:showAsAction="always" />
+</menu>

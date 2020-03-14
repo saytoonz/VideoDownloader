@@ -1,0 +1,84 @@
+apply plugin: 'com.android.application'
+
+ext {
+    /**
+     * keys in build config
+     */
+    KEY_BUILD_TYPE_STRING = 'String'
+    KEY_BUILD_TYPE_BOOL = 'boolean'
+    KEY_BUILD_TYPE_DOUBLE = 'double'
+    KEY_BUILD_DATE = 'BUILD_DATE'
+    KEY_BUILD_URL = 'BASE_URL'
+    KEY_BUILD_GROUP = 'GROUP'
+    KEY_BUILD_IMAGE = 'IMAGE_SCALE'
+    KEY_BUILD_DCH = 'DISTRIBUTION_CHANNEL'
+}
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        applicationId "com.viebrowser.lite"
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 1119
+        versionName "1.1.19"
+        //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        vieKey {
+            keyAlias 'vieKey'
+            keyPassword 'viepassword'
+            storeFile file('../buildRelease.jks')
+            storePassword 'viepassword'
+        }
+    }
+
+    buildTypes {
+        release {
+            zipAlignEnabled true
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.vieKey
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
+    implementation 'androidx.navigation:navigation-fragment:2.2.1'
+    implementation 'androidx.navigation:navigation-ui:2.2.1'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    implementation files('src/libs/mos.lite-171025.jar')
+    implementation 'org.jsoup:jsoup:1.11.1'
+    implementation 'com.amitshekhar.android:android-networking:1.0.2'
+    //Image Glide Library
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation project(path: ":bettervideoplayer")
+}

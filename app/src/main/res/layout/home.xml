@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.github.mthli.Ninja.View.NinjaRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <org.askerov.dynamicgrid.DynamicGridView
+        android:id="@+id/home_grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:columnWidth="@dimen/layout_width_156dp"
+        android:gravity="center"
+        android:numColumns="auto_fit"
+        android:padding="@dimen/padding_16dp"
+        android:scrollbars="none"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="@dimen/layout_height_12dp" />
+
+    <FrameLayout
+        android:id="@+id/home_about_blank"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <ScrollView
+            android:id="@+id/home_container"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:scrollbars="none">
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="36.0dip">
+
+                <LinearLayout
+                    android:id="@+id/icon"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16.0dip"
+                    android:layout_marginTop="36.0dip"
+                    android:layout_marginRight="16.0dip"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:id="@+id/ic_launcher"
+                        android:layout_width="72.0dip"
+                        android:layout_height="72.0dip"
+                        android:src="@drawable/ic_launcher" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="8.0dip"
+                        android:maxLines="1"
+                        android:singleLine="true"
+                        android:text="@string/video_downloader"
+                        android:textColor="@color/gray_900"
+                        android:textSize="24.0dip"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/input"
+                    android:layout_width="fill_parent"
+                    android:layout_height="48.0dip"
+                    android:layout_below="@id/icon"
+                    android:layout_marginLeft="16.0dip"
+                    android:layout_marginTop="36.0dip"
+                    android:layout_marginRight="16.0dip"
+                    android:background="@drawable/bg_omnibox"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:paddingLeft="8.0dip"
+                    android:singleLine="true"
+                    android:text="@string/tap_to_input_url" />
+
+                <TextView
+                    android:id="@+id/supported_app"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/input"
+                    android:layout_marginLeft="16.0dip"
+                    android:layout_marginTop="24.0dip"
+                    android:text="@string/download_video_from_these_apps_below"
+                    android:textColor="@color/black"
+                    android:visibility="visible" />
+
+                <!--                    <FrameLayout-->
+                <!--                        android:id="@+id/supported_app_container"-->
+                <!--                        android:layout_width="fill_parent"-->
+                <!--                        android:layout_height="wrap_content"-->
+                <!--                        android:layout_below="@id/supported_app"/>-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/layout_margin_20dp"
+                    android:layout_below="@id/supported_app"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/layout_margin_8dp"
+                        android:gravity="center_horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/openFacebook"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_facebook"
+                                android:scaleType="centerCrop"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Facebook"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/openInstagram"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_instagram"
+                                android:scaleType="centerCrop"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Instagram"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/openTicTok"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_tiktok"
+                                android:scaleType="centerCrop"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Tik Tok"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/layout_margin_8dp"
+                        android:gravity="center_horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/openTwitter"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_twitter"
+                                android:scaleType="centerCrop"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Twitter"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/openPinterest"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_pinterest"
+                                android:scaleType="centerCrop"
+                                android:adjustViewBounds="true"/>
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Pinterest"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal" />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/openBuzzVideo"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal">
+
+                            <ImageView
+                                android:id="@id/grid_item_cover"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_marginLeft="@dimen/layout_margin_8dp"
+                                android:layout_marginTop="@dimen/layout_margin_8dp"
+                                android:layout_marginRight="@dimen/layout_margin_8dp"
+                                android:layout_marginBottom="@dimen/layout_margin_8dp"
+                                android:adjustViewBounds="true"
+                                android:background="@color/white"
+                                android:contentDescription="@null"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/ic_buzz" />
+
+                            <TextView
+                                android:id="@id/grid_item_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="@dimen/layout_margin_8dp"
+                                android:ellipsize="none"
+                                android:text="Buzz Video"
+                                android:gravity="start|center"
+                                android:singleLine="true"
+                                android:textColor="@color/text"
+                                android:textSize="@dimen/text_size_14sp"
+                                android:textStyle="normal"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </RelativeLayout>
+        </ScrollView>
+    </FrameLayout>
+
+</io.github.mthli.Ninja.View.NinjaRelativeLayout>
