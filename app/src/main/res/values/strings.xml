@@ -610,4 +610,11 @@
     <string name="share">Share</string>
     <string name="repost_on_fb">Repost on FB</string>
     <string name="repost_on_ig">Repost on IG</string>
+
+
+    <string name="download_title">Download?</string>
+    <string name="stream_text">Stream</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="subtitle_title">Download and Stream Videos</string>
+    <string name="download_text">Download</string>
 </resources>

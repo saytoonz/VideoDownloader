@@ -70,11 +70,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.title.setText(item.getTitle());
         holder.time.setText(item.getTime());
         if (item.getDownloaded().equals("no")) {
-            holder.download.setImageResource(R.drawable.history_selector);
+            holder.download.setImageResource(R.drawable.ic_file_download_black_24dp);
             holder.download.setOnClickListener(v -> downloadFile(item.getLink(), holder.progress_bar, item));
         } else {
             if (TextUtils.isEmpty(item.getLocal_location())) {
-                holder.download.setImageResource(R.drawable.history_selector);
+                holder.download.setImageResource(R.drawable.ic_file_download_black_24dp);
                 holder.download.setOnClickListener(v -> downloadFile(item.getLink(), holder.progress_bar, item));
             } else {
                 //Check if file exist

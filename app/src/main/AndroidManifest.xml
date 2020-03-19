@@ -26,6 +26,8 @@
         android:roundIcon="@mipmap/ic_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".downloaders.Activities.FB_BrowserActivity"
+            android:launchMode="singleTask"/>
         <activity
             android:name=".Activity.HolderActivity"
             android:label="@string/app_name"
@@ -50,7 +52,7 @@
             android:alwaysRetainTaskState="true"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:screenOrientation="fullSensor"
             android:theme="@style/BottomNaveTheme"
             android:windowSoftInputMode="adjustResize">

@@ -2,9 +2,11 @@ package io.github.mthli.Ninja.Activity;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
@@ -33,6 +35,7 @@ import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,10 +46,14 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -164,6 +171,10 @@ public class BrowserActivity extends Activity implements BrowserController {
     private static BottomNavigationView navigation;
     private int Permission_Storage_Id = 2;
     private static String outsideUrl = "";
+    private Button streamButton, downloadButton, cancelButton;
+    String urlString;
+    Dialog main_dialog;
+    WebView webo;
 
     private class VideoCompletionListener implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
         @Override
@@ -372,7 +383,7 @@ public class BrowserActivity extends Activity implements BrowserController {
             @Override
             public void run() {
                 String currentUrl = inputBox.getText().toString();
-                Log.e("TAG", "run: " + currentUrl);
+//                Log.e("TAG", "run: " + currentUrl);
                 if (!TextUtils.isEmpty(currentUrl)) {
                     if (!currentUrl.equals(PreferenceManager.getDefaultSharedPreferences(BrowserActivity.this)
                             .getString("currentUrl", ""))) {
@@ -920,44 +931,33 @@ public class BrowserActivity extends Activity implements BrowserController {
             return false;
         });
 
-        searchUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String query = searchBox.getText().toString();
-                if (query.isEmpty()) {
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
-                    return;
-                }
+        searchUp.setOnClickListener(v -> {
+            String query = searchBox.getText().toString();
+            if (query.isEmpty()) {
+                NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
+                return;
+            }
 
-                hideSoftInput(searchBox);
-                if (currentAlbumController instanceof NinjaWebView) {
-                    ((NinjaWebView) currentAlbumController).findNext(false);
-                }
+            hideSoftInput(searchBox);
+            if (currentAlbumController instanceof NinjaWebView) {
+                ((NinjaWebView) currentAlbumController).findNext(false);
             }
         });
 
-        searchDown.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String query = searchBox.getText().toString();
-                if (query.isEmpty()) {
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
-                    return;
-                }
+        searchDown.setOnClickListener(v -> {
+            String query = searchBox.getText().toString();
+            if (query.isEmpty()) {
+                NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
+                return;
+            }
 
-                hideSoftInput(searchBox);
-                if (currentAlbumController instanceof NinjaWebView) {
-                    ((NinjaWebView) currentAlbumController).findNext(true);
-                }
+            hideSoftInput(searchBox);
+            if (currentAlbumController instanceof NinjaWebView) {
+                ((NinjaWebView) currentAlbumController).findNext(true);
             }
         });
 
-        searchCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideSearchPanel();
-            }
-        });
+        searchCancel.setOnClickListener(v -> hideSearchPanel());
     }
 
     private synchronized void addAlbum(int flag) {
@@ -1016,6 +1016,76 @@ public class BrowserActivity extends Activity implements BrowserController {
         omniboxOverflow.setText(String.valueOf(albumSize++));
     }
 
+
+    @JavascriptInterface
+    public void processVideo(String str, String str2) {
+        Log.e("WEBVIEWJS", "RUN");
+        Log.e("WEBVIEWJS", str);
+        Bundle args = new Bundle();
+        args.putString("vid_data", str);
+        urlString = str;
+        outsideUrl = str;
+
+        runOnUiThread(() -> {
+            // put your code to show dialog here.
+            LayoutInflater dialogLayout = LayoutInflater.from(BrowserActivity.this);
+            View DialogView = dialogLayout.inflate(R.layout.dialog_download, null);
+            main_dialog = new Dialog(BrowserActivity.this, R.style.MyDialogTheme);
+            main_dialog.setContentView(DialogView);
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(main_dialog.getWindow().getAttributes());
+            lp.width = (getResources().getDisplayMetrics().widthPixels);
+            lp.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.65);
+            main_dialog.getWindow().setAttributes(lp);
+            streamButton = DialogView.findViewById(R.id.streamButton);
+            downloadButton = DialogView.findViewById(R.id.downloadButton);
+            cancelButton = DialogView.findViewById(R.id.cancelButton);
+            main_dialog.setCancelable(false);
+            main_dialog.setCanceledOnTouchOutside(false);
+            main_dialog.show();
+            streamButton.setOnClickListener(v -> {
+                Toast.makeText(BrowserActivity.this, "Streaming", Toast.LENGTH_SHORT).show();
+
+//                        Intent intent = new Intent(BrowserActivity.this, VideoPlayer.class);
+//                        intent.putExtra("video_url", urlString);
+//                        startActivity(intent);
+                main_dialog.dismiss();
+            });
+            downloadButton.setOnClickListener(v -> {
+                Toast.makeText(BrowserActivity.this, "Downloading", Toast.LENGTH_SHORT).show();
+//                        newDownload(urlString);
+                main_dialog.dismiss();
+            });
+            cancelButton.setOnClickListener(v -> main_dialog.dismiss());
+        });
+
+    }
+
+    private void setUpJavascript() {
+//        webo.getSettings().setJavaScriptEnabled(true);
+//        webo.addJavascriptInterface(this, "FBDownloader");
+//        webo.setWebViewClient(new WebViewClient() {
+//            @Override
+//            public void onPageFinished(WebView view, String url) {
+//                BrowserActivity.this.webo.loadUrl("javascript:(function() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\");');}}})()");
+//                Log.e("WEBVIEWFIN", url);
+//                super.onPageFinished(view, url);
+//            }
+//
+//            @Override
+//            public void onLoadResource(WebView view, String url) {
+//                BrowserActivity.this.webo.loadUrl("javascript:(function prepareVideo() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;console.log(i);var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\",\"'+jsonData['videoID']+'\");');}}})()");
+//                BrowserActivity.this.webo.loadUrl("javascript:( window.onload=prepareVideo;)()");
+//            }
+//        });
+//        CookieManager cookieManager = CookieManager.getInstance();
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+//            CookieSyncManager.createInstance(this);
+//        }
+//        cookieManager.setAcceptCookie(true);
+    }
+
+
     private synchronized void addAlbum(String title, final String url, final boolean foreground, final Message resultMsg) {
         final NinjaWebView webView = new NinjaWebView(this);
         webView.setBrowserController(this);
@@ -1023,6 +1093,8 @@ public class BrowserActivity extends Activity implements BrowserController {
         webView.setAlbumCover(ViewUnit.capture(webView, dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
         webView.setAlbumTitle(title);
         ViewUnit.bound(this, webView);
+        webo = webView;
+        setUpJavascript();
 
         final View albumView = webView.getAlbumView();
         if (currentAlbumController != null && (currentAlbumController instanceof NinjaWebView) && resultMsg != null) {
@@ -1075,6 +1147,7 @@ public class BrowserActivity extends Activity implements BrowserController {
         omniboxOverflow.setText(String.valueOf(albumSize++));
     }
 
+    @SuppressLint("AddJavascriptInterface")
     private synchronized void pinAlbums(String url) {
         hideSoftInput(inputBox);
         hideSearchPanel();
@@ -1106,12 +1179,9 @@ public class BrowserActivity extends Activity implements BrowserController {
             currentAlbumController.activate();
 
             updateOmnibox();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    switcherScroller.smoothScrollTo(currentAlbumController.getAlbumView().getLeft(), 0);
-                    currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
-                }
+            new Handler().postDelayed(() -> {
+                switcherScroller.smoothScrollTo(currentAlbumController.getAlbumView().getLeft(), 0);
+                currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
             }, shortAnimTime);
         } else { // When url != null
             NinjaWebView webView = new NinjaWebView(this);
@@ -1121,6 +1191,8 @@ public class BrowserActivity extends Activity implements BrowserController {
             webView.setAlbumTitle(getString(R.string.album_untitled));
             ViewUnit.bound(this, webView);
             webView.loadUrl(url);
+            webo = webView;
+            setUpJavascript();
 
             BrowserContainer.add(webView);
             final View albumView = webView.getAlbumView();
@@ -1136,12 +1208,9 @@ public class BrowserActivity extends Activity implements BrowserController {
             currentAlbumController.activate();
 
             updateOmnibox();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    switcherScroller.smoothScrollTo(currentAlbumController.getAlbumView().getLeft(), 0);
-                    currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
-                }
+            new Handler().postDelayed(() -> {
+                switcherScroller.smoothScrollTo(currentAlbumController.getAlbumView().getLeft(), 0);
+                currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
             }, shortAnimTime);
         }
     }
@@ -1187,16 +1256,13 @@ public class BrowserActivity extends Activity implements BrowserController {
         currentAlbumController.activate();
         switcherScroller.smoothScrollTo(currentAlbumController.getAlbumView().getLeft(), 0);
         updateOmnibox();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (expand) {
-                    switcherPanel.expanded();
-                }
+        new Handler().postDelayed(() -> {
+            if (expand) {
+                switcherPanel.expanded();
+            }
 
-                if (capture) {
-                    currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
-                }
+            if (capture) {
+                currentAlbumController.setAlbumCover(ViewUnit.capture(((View) currentAlbumController), dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
             }
         }, shortAnimTime);
     }
@@ -1233,6 +1299,8 @@ public class BrowserActivity extends Activity implements BrowserController {
 
         if (currentAlbumController instanceof NinjaWebView) {
             ((NinjaWebView) currentAlbumController).loadUrl(url);
+//            webo =((NinjaWebView) currentAlbumController);
+            setUpJavascript();
             updateOmnibox();
         } else if (currentAlbumController instanceof NinjaRelativeLayout) {
             NinjaWebView webView = new NinjaWebView(this);
@@ -1241,6 +1309,8 @@ public class BrowserActivity extends Activity implements BrowserController {
             webView.setAlbumCover(ViewUnit.capture(webView, dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
             webView.setAlbumTitle(getString(R.string.album_untitled));
             ViewUnit.bound(this, webView);
+//            webo = webView;
+            setUpJavascript();
 
             int index = switcherContainer.indexOfChild(currentAlbumController.getAlbumView());
             currentAlbumController.deactivate();

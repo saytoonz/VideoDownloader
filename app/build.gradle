@@ -81,4 +81,8 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation project(path: ":bettervideoplayer")
+    implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
+    implementation('com.mikepenz:materialdrawer:5.8.2@aar') {
+        transitive = true
+    }
 }

@@ -2,9 +2,9 @@ package io.github.mthli.Ninja.downloaders.models;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,10 +23,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
 
+import io.github.mthli.Ninja.downloaders.Activities.FB_BrowserActivity;
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
+import static io.github.mthli.Ninja.Activity.BrowserActivity.openNewUrl;
 import static io.github.mthli.Ninja.downloaders.Activities.FacebookDownloaderActivity.facebookRunning;
 
 
@@ -34,7 +36,6 @@ public class FbVideoDownloader implements VideoDownloader {
 
     private Context context;
     private String VideoURL;
-    private long DownLoadID;
     private String VideoTitle;
 
     public FbVideoDownloader(Context context, String videoURL) {
@@ -125,16 +126,21 @@ public class FbVideoDownloader implements VideoDownloader {
                 values.put("link_type", "fb");
                 values.put("time", fileSize);
                 long newRowId = db.insert("link_lists", null, values);
-                if (facebookRunning){
+                if (facebookRunning) {
                     ((Activity) context).finish();
                     openHistoryFragment();
                 }
 
             } else {
-                if (Looper.myLooper() == null)
-                    Looper.prepare();
-                Toast.makeText(context, "Wrong Video URL or Check Internet Connection", Toast.LENGTH_SHORT).show();
-                Looper.loop();
+                Toast.makeText(context, "Opening url in FB browser....", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context, FB_BrowserActivity.class);
+                intent.putExtra("VideoURL", VideoURL);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+                if (facebookRunning) {
+                    ((Activity) context).finish();
+                    openHistoryFragment();
+                }
             }
         }
 
