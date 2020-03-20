@@ -1,19 +1,13 @@
 package io.github.mthli.Ninja.downloaders.models;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,7 +15,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,9 +28,7 @@ import java.util.Date;
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
-import static android.content.Context.DOWNLOAD_SERVICE;
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
-import static io.github.mthli.Ninja.downloaders.Activities.InstagramDownloaderActivity.instagramRunning;
 
 public class InstagramVideoDownloader implements VideoDownloader {
 
@@ -242,10 +233,7 @@ public class InstagramVideoDownloader implements VideoDownloader {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if (!s.contains("No URL")) {
-                if (instagramRunning) {
-                    ((Activity) context).finish();
-                    openHistoryFragment();
-                }
+                openHistoryFragment();
             } else {
                 Toast.makeText(context, "Unknow Error....", Toast.LENGTH_SHORT).show();
             }

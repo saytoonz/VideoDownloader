@@ -1,12 +1,8 @@
 package io.github.mthli.Ninja.downloaders.models;
 
-import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.os.Environment;
 import android.os.Looper;
 import android.webkit.URLUtil;
 import android.widget.Toast;
@@ -18,18 +14,12 @@ import com.androidnetworking.interfaces.JSONObjectRequestListener;
 
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
-import static android.content.Context.DOWNLOAD_SERVICE;
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
-import static io.github.mthli.Ninja.downloaders.Activities.TwitterDownloaderActivity.twitterRunning;
 
 public class TwitterVideoDownloader implements VideoDownloader {
 
@@ -98,10 +88,8 @@ public class TwitterVideoDownloader implements VideoDownloader {
                                     values.put("link_type", "twitter");
                                     values.put("time", fileSize);
                                     long newRowId = db.insert("link_lists", null, values);
-                                    if (twitterRunning) {
-                                        ((Activity) context).finish();
-                                        openHistoryFragment();
-                                    }
+
+                                    openHistoryFragment();
 
 
                                 } catch (Exception e) {

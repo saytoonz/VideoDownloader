@@ -1,34 +1,26 @@
 package io.github.mthli.Ninja.downloaders.models;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.os.Looper;
 import android.webkit.URLUtil;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
-import static android.content.Context.DOWNLOAD_SERVICE;
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
-import static io.github.mthli.Ninja.downloaders.Activities.TikTokDownloaderActivivty.tiktokRunning;
 
 public class TiktokVideoDownloader implements VideoDownloader {
 
@@ -142,10 +134,8 @@ public class TiktokVideoDownloader implements VideoDownloader {
                     values.put("link_type", "tik");
                     values.put("time", fileSize);
                     long newRowId = db.insert("link_lists", null, values);
-                    if (tiktokRunning) {
-                        ((Activity) context).finish();
-                        openHistoryFragment();
-                    }
+
+                    openHistoryFragment();
 
                 } catch (Exception e) {
                     if (Looper.myLooper() == null)

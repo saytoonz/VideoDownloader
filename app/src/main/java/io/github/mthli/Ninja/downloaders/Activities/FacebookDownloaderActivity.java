@@ -1,5 +1,6 @@
 package io.github.mthli.Ninja.downloaders.Activities;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,7 +30,6 @@ public class FacebookDownloaderActivity extends AppCompatActivity {
 
     EditText inputURl;
     Button BtnDownload;
-    public static boolean facebookRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,26 +71,38 @@ public class FacebookDownloaderActivity extends AppCompatActivity {
             if (itsInstagramLink(url)) {
                 InstagramVideoDownloader downloader = new InstagramVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing an Instagram Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTwitterLink(url)) {
                 TwitterVideoDownloader downloader = new TwitterVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Twitter Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTikTokLink(url)) {
                 TiktokVideoDownloader downloader = new TiktokVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Tiktok Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsFacebookLink(url)) {
                 FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Facebook Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsBuzzLink(url)) {
                 TopBuzzDownloader downloader = new TopBuzzDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a BuzzVideo Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsPinterestLink(url)) {
                 PinterestDownloader downloader = new PinterestDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Pinterest Url...", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
@@ -125,17 +138,5 @@ public class FacebookDownloaderActivity extends AppCompatActivity {
                 (clipboard.contains("https://www.pinterest.com/") && clipboard.contains("/sent/"));
     }
 
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        facebookRunning = true;
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        facebookRunning = false;
-    }
 
 }

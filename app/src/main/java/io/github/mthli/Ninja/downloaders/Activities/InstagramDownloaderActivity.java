@@ -1,5 +1,6 @@
 package io.github.mthli.Ninja.downloaders.Activities;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,10 +27,8 @@ import io.github.mthli.Ninja.downloaders.models.TopBuzzDownloader;
 import io.github.mthli.Ninja.downloaders.models.TwitterVideoDownloader;
 
 public class InstagramDownloaderActivity extends AppCompatActivity {
-
     EditText inputURl;
     Button BtnDownload;
-    public static boolean instagramRunning = false;
 
 
     @Override
@@ -38,7 +38,6 @@ public class InstagramDownloaderActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
-
 
         inputURl = findViewById(R.id.content_url);
         BtnDownload = findViewById(R.id.check_url);
@@ -71,26 +70,38 @@ public class InstagramDownloaderActivity extends AppCompatActivity {
             if (itsInstagramLink(url)) {
                 InstagramVideoDownloader downloader = new InstagramVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing an Instagram Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTwitterLink(url)) {
                 TwitterVideoDownloader downloader = new TwitterVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Twitter Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTikTokLink(url)) {
                 TiktokVideoDownloader downloader = new TiktokVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Tiktok Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsFacebookLink(url)) {
                 FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Facebook Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsBuzzLink(url)) {
                 TopBuzzDownloader downloader = new TopBuzzDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a BuzzVideo Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsPinterestLink(url)) {
                 PinterestDownloader downloader = new PinterestDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Pinterest Url...", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
@@ -126,16 +137,4 @@ public class InstagramDownloaderActivity extends AppCompatActivity {
                 (clipboard.contains("https://www.pinterest.com/") && clipboard.contains("/sent/"));
     }
 
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        instagramRunning = true;
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        instagramRunning = false;
-    }
 }

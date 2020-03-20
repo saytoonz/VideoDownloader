@@ -1,5 +1,6 @@
 package io.github.mthli.Ninja.downloaders.Activities;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.Build;
@@ -31,7 +32,6 @@ import io.github.mthli.Ninja.downloaders.models.TwitterVideoDownloader;
 public class BuzzVideoDownloaderActivity extends AppCompatActivity {
 
     private EditText inputURl;
-    public static boolean bussRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,26 +75,38 @@ public class BuzzVideoDownloaderActivity extends AppCompatActivity {
             if (itsInstagramLink(url)) {
                 InstagramVideoDownloader downloader = new InstagramVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing an Instagram Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTwitterLink(url)) {
                 TwitterVideoDownloader downloader = new TwitterVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Twitter Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsTikTokLink(url)) {
                 TiktokVideoDownloader downloader = new TiktokVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Tiktok Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsFacebookLink(url)) {
                 FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Facebook Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsBuzzLink(url)) {
                 TopBuzzDownloader downloader = new TopBuzzDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a BuzzVideo Url...", Toast.LENGTH_SHORT).show();
+                finish();
 
             } else if (itsPinterestLink(url)) {
                 PinterestDownloader downloader = new PinterestDownloader(getApplicationContext(), url);
                 downloader.DownloadVideo();
+                Toast.makeText(this, "Parsing a Pinterest Url...", Toast.LENGTH_SHORT).show();
+                finish();
             }
         }
     }
@@ -127,19 +139,6 @@ public class BuzzVideoDownloaderActivity extends AppCompatActivity {
     private boolean itsPinterestLink(String clipboard) {
         return (clipboard.contains("://pin.it/") && clipboard.contains("http")) ||
                 (clipboard.contains("https://www.pinterest.com/") && clipboard.contains("/sent/"));
-    }
-
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        bussRunning = true;
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        bussRunning = false;
     }
 
 }

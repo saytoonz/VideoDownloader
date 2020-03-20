@@ -215,12 +215,10 @@ public class BrowserActivity extends Activity implements BrowserController {
     }
 
     public static void openHistoryFragment() {
-        FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
-        activeFragment = new HistoryFragment();
-        transaction.replace(R.id.main_content, activeFragment);
-        transaction.addToBackStack(null);
-        omnibox.setVisibility(View.GONE);
-//        navigation.setSelectedItemId(R.id.navigation_notifications);
+        if (omnibox != null)
+            omnibox.setVisibility(View.GONE);
+        if (navigation != null)
+            navigation.setSelectedItemId(R.id.navigation_notifications);
     }
 
 
@@ -441,14 +439,14 @@ public class BrowserActivity extends Activity implements BrowserController {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.main_content, fragment);
         transaction.addToBackStack(null);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     private void removeFragment(Fragment fragment) {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.addToBackStack(null);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
 

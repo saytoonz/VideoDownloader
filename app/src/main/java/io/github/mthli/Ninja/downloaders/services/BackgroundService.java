@@ -74,37 +74,45 @@ public class BackgroundService extends Service {
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
+                Toast.makeText(getApplicationContext(), "Parsing an Instagram Url...", Toast.LENGTH_SHORT).show();
+
             } else if (itsTwitterLink(clipboard)) {
                 TwitterVideoDownloader downloader = new TwitterVideoDownloader(getApplicationContext(), clipboard);
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
+                Toast.makeText(getApplicationContext(), "Parsing a Twitter Url...", Toast.LENGTH_SHORT).show();
 
             } else if (itsTikTokLink(clipboard)) {
                 TiktokVideoDownloader downloader = new TiktokVideoDownloader(getApplicationContext(), clipboard);
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
+                Toast.makeText(getApplicationContext(), "Parsing a TikTok Url...", Toast.LENGTH_SHORT).show();
 
             } else if (itsFacebookLink(clipboard)) {
                 FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), clipboard);
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
+                Toast.makeText(getApplicationContext(), "Parsing a Facebook Url...", Toast.LENGTH_SHORT).show();
 
             } else if (itsBuzzLink(clipboard)) {
                 TopBuzzDownloader downloader = new TopBuzzDownloader(getApplicationContext(), clipboard);
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
+                Toast.makeText(getApplicationContext(), "Parsing an BuzzVideo Url...", Toast.LENGTH_SHORT).show();
+
             } else if (itsPinterestLink(clipboard)) {
                 PinterestDownloader downloader = new PinterestDownloader(getApplicationContext(), clipboard);
                 downloader.DownloadVideo();
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit().putString("a", clipboard).apply();
                 openHistory();
-            } else {
-                //  Log.e("TAG", "checkIfLink: " + clipboard);
+                Toast.makeText(getApplicationContext(), "Parsing an Pinterest Url...", Toast.LENGTH_SHORT).show();
+
             }
+            //  Log.e("TAG", "checkIfLink: " + clipboard);
         }
     }
 

@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:allowBackup="true"
@@ -27,7 +28,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".downloaders.Activities.FB_BrowserActivity"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask"
+            android:theme="@style/BottomNaveTheme"/>
         <activity
             android:name=".Activity.HolderActivity"
             android:label="@string/app_name"
@@ -110,6 +112,14 @@
         <service
             android:name=".downloaders.services.BackgroundService"
             android:enabled="true" />
+
+
+            <receiver
+                android:name=".downloaders.services.BroadcastReceiver">
+                <intent-filter>
+                    <action android:name="android.intent.action.BOOT_COMPLETED" />
+                </intent-filter>
+            </receiver>
     </application>
 
 </manifest>

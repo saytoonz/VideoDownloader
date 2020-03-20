@@ -28,8 +28,6 @@ import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
-import static io.github.mthli.Ninja.Activity.BrowserActivity.openNewUrl;
-import static io.github.mthli.Ninja.downloaders.Activities.FacebookDownloaderActivity.facebookRunning;
 
 
 public class FbVideoDownloader implements VideoDownloader {
@@ -126,10 +124,7 @@ public class FbVideoDownloader implements VideoDownloader {
                 values.put("link_type", "fb");
                 values.put("time", fileSize);
                 long newRowId = db.insert("link_lists", null, values);
-                if (facebookRunning) {
-                    ((Activity) context).finish();
-                    openHistoryFragment();
-                }
+                openHistoryFragment();
 
             } else {
                 Toast.makeText(context, "Opening url in FB browser....", Toast.LENGTH_SHORT).show();
@@ -137,10 +132,7 @@ public class FbVideoDownloader implements VideoDownloader {
                 intent.putExtra("VideoURL", VideoURL);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
-                if (facebookRunning) {
-                    ((Activity) context).finish();
-                    openHistoryFragment();
-                }
+                openHistoryFragment();
             }
         }
 

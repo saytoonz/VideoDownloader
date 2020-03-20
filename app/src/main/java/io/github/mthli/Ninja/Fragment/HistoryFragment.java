@@ -1,9 +1,12 @@
 package io.github.mthli.Ninja.Fragment;
 
 import android.app.Fragment;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.BaseColumns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.github.mthli.Ninja.R;
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
@@ -24,6 +28,8 @@ import io.github.mthli.Ninja.downloaders.history_files.models.HistoryModel;
 
 public class HistoryFragment extends Fragment {
 
+    private Handler handler;
+    private Runnable runnable;
     private RecyclerView recyclerView;
     private Toolbar toolbar;
     DBHelper dbHelper;
@@ -48,6 +54,15 @@ public class HistoryFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                notifyAdapterDataChange();
+                handler.postDelayed(this, 500);
+            }
+        };
+        handler.postDelayed(runnable, 6000);
         return root;
     }
 
@@ -83,6 +98,7 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onDestroy() {
         dbHelper.close();
+        handler.removeCallbacks(runnable);
         super.onDestroy();
     }
 

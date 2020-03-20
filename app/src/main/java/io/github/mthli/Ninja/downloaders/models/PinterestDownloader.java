@@ -1,13 +1,9 @@
 package io.github.mthli.Ninja.downloaders.models;
 
-import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,20 +15,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Date;
 
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 
-import static android.content.Context.DOWNLOAD_SERVICE;
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
-import static io.github.mthli.Ninja.downloaders.Activities.InstagramDownloaderActivity.instagramRunning;
-import static io.github.mthli.Ninja.downloaders.Activities.PinterestDownloaderActivity.pinterestRunning;
 
 public class PinterestDownloader {
 
@@ -40,7 +31,7 @@ public class PinterestDownloader {
     private String FinalURL;
     private String VideoURL;
     private String VideoTitle;
-//    String[] strings = new String[]{"736x", "60x60", "474x", "170x", "600x315", "564x", "236x", "136x136", "orig"};
+    //    String[] strings = new String[]{"736x", "60x60", "474x", "170x", "600x315", "564x", "236x", "136x136", "orig"};
 //    String[] videoStrings = new String[]{"V_720P", "V_HLSV4", "V_HLSV3_WEB", "V_HLSV3_MOBILE", "orig"};
     String[] strings = new String[]{"orig"};
     String[] videoStrings = new String[]{"V_720P", "V_HLSV4", "V_HLSV3_WEB", "V_HLSV3_MOBILE", "orig"};
@@ -126,7 +117,7 @@ public class PinterestDownloader {
             super.onProgressUpdate(s);
             FinalURL = s[0];
             if (FinalURL != null || FinalURL != "No URL") {
-                    VideoTitle = s[1] + "x" + s[2] + " " + s[4] + " " + s[3];
+                VideoTitle = s[1] + "x" + s[2] + " " + s[4] + " " + s[3];
                 try {
 
                     String fileSize = new Date().toString();
@@ -159,16 +150,11 @@ public class PinterestDownloader {
         @Override
         protected void onPostExecute(String o) {
             super.onPostExecute(o);
-                if (pinterestRunning){
-                    ((Activity) context).finish();
-                    openHistoryFragment();
-                }
+            openHistoryFragment();
 
         }
 
     }
-
-
 
 
     private String[] getPinterset(JSONObject value, String type) {
