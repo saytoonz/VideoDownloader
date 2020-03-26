@@ -345,6 +345,7 @@ class DownloadTask extends AsyncTask<String, Integer, String> {
                 output.write(data, 0, count);
             }
         } catch (Exception e) {
+            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
             return e.toString();
         } finally {
             try {

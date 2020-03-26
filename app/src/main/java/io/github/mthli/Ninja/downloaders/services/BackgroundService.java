@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.webkit.URLUtil;
 import android.widget.Toast;
 
@@ -15,16 +14,13 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-import io.github.mthli.Ninja.downloaders.Activities.InstagramDownloaderActivity;
-import io.github.mthli.Ninja.downloaders.Activities.TwitterDownloaderActivity;
+import io.github.mthli.Ninja.Activity.BrowserActivity;
 import io.github.mthli.Ninja.downloaders.models.FbVideoDownloader;
 import io.github.mthli.Ninja.downloaders.models.InstagramVideoDownloader;
 import io.github.mthli.Ninja.downloaders.models.PinterestDownloader;
 import io.github.mthli.Ninja.downloaders.models.TiktokVideoDownloader;
 import io.github.mthli.Ninja.downloaders.models.TopBuzzDownloader;
 import io.github.mthli.Ninja.downloaders.models.TwitterVideoDownloader;
-
-import static io.github.mthli.Ninja.Activity.BrowserActivity.openBrowserShowHistory;
 
 public class BackgroundService extends Service {
     private Handler handler;
@@ -167,8 +163,12 @@ public class BackgroundService extends Service {
 
 
     private void openHistory() {
-        openBrowserShowHistory(getApplicationContext());
+//        openBrowserShowHistory(getApplicationContext());
+        Intent intent = new Intent(getApplicationContext(), BrowserActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
+
 
 
 }

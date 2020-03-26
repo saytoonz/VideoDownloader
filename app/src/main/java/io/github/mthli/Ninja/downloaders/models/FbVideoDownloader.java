@@ -20,14 +20,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 
-import io.github.mthli.Ninja.downloaders.Activities.FB_BrowserActivity;
 import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.interfaces.VideoDownloader;
 
 import static io.github.mthli.Ninja.Activity.BrowserActivity.openHistoryFragment;
+import static io.github.mthli.Ninja.Activity.BrowserActivity.openNewUrl;
 
 
 public class FbVideoDownloader implements VideoDownloader {
@@ -128,11 +127,7 @@ public class FbVideoDownloader implements VideoDownloader {
 
             } else {
                 Toast.makeText(context, "Opening url in FB browser....", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(context, FB_BrowserActivity.class);
-                intent.putExtra("VideoURL", VideoURL);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-                openHistoryFragment();
+                openNewUrl(VideoURL);
             }
         }
 

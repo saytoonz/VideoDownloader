@@ -27,9 +27,6 @@
         android:roundIcon="@mipmap/ic_launcher_foreground"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".downloaders.Activities.FB_BrowserActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/BottomNaveTheme"/>
         <activity
             android:name=".Activity.HolderActivity"
             android:label="@string/app_name"

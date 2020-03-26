@@ -240,36 +240,36 @@ public class NinjaWebView extends WebView implements AlbumController {
         setLayerType(View.LAYER_TYPE_HARDWARE, paint);
     }
 
-    @Override
-    public synchronized void loadUrl(String url) {
-        if (url == null || url.trim().isEmpty()) {
-            NinjaToast.show(context, R.string.toast_load_error);
-            return;
-        }
-
-        url = BrowserUnit.queryWrapper(context, url.trim());
-        if (url.startsWith(BrowserUnit.URL_SCHEME_MAIL_TO)) {
-            Intent intent = IntentUnit.getEmailIntent(MailTo.parse(url));
-            context.startActivity(intent);
-            reload();
-
-            return;
-        } else if (url.startsWith(BrowserUnit.URL_SCHEME_INTENT)) {
-            Intent intent;
-            try {
-                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-                context.startActivity(intent);
-            } catch (URISyntaxException u) {}
-
-            return;
-        }
-
-        webViewClient.updateWhite(adBlock.isWhite(url));
-        super.loadUrl(url);
-        if (browserController != null && foreground) {
-            browserController.updateBookmarks();
-        }
-    }
+//    @Override
+//    public synchronized void loadUrl(String url) {
+//        if (url == null || url.trim().isEmpty()) {
+//            NinjaToast.show(context, R.string.toast_load_error);
+//            return;
+//        }
+//
+//        url = BrowserUnit.queryWrapper(context, url.trim());
+//        if (url.startsWith(BrowserUnit.URL_SCHEME_MAIL_TO)) {
+//            Intent intent = IntentUnit.getEmailIntent(MailTo.parse(url));
+//            context.startActivity(intent);
+//            reload();
+//
+//            return;
+//        } else if (url.startsWith(BrowserUnit.URL_SCHEME_INTENT)) {
+//            Intent intent;
+//            try {
+//                intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+//                context.startActivity(intent);
+//            } catch (URISyntaxException u) {}
+//
+//            return;
+//        }
+//
+//        webViewClient.updateWhite(adBlock.isWhite(url));
+//        super.loadUrl(url);
+//        if (browserController != null && foreground) {
+//            browserController.updateBookmarks();
+//        }
+//    }
 
     @Override
     public void reload() {

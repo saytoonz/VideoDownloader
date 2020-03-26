@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Message;
 import androidx.annotation.NonNull;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.webkit.*;
 import android.widget.EditText;
@@ -40,6 +41,9 @@ public class NinjaWebViewClient extends WebViewClient {
         this.enable = enable;
     }
 
+
+
+
     public NinjaWebViewClient(NinjaWebView ninjaWebView) {
         super();
         this.ninjaWebView = ninjaWebView;
@@ -61,9 +65,16 @@ public class NinjaWebViewClient extends WebViewClient {
     }
 
     @Override
+    public void onLoadResource(WebView view, String url) {
+        ninjaWebView.loadUrl("javascript:(function prepareVideo() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;console.log(i);var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\",\"'+jsonData['videoID']+'\");');}}})()");
+        ninjaWebView.loadUrl("javascript:( window.onload=prepareVideo;)()");
+        Log.e("onLoadResource", url);
+    }
+    @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-
+        ninjaWebView.loadUrl("javascript:(function() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\");');}}})()");
+        Log.e("WEBVIEWFIN", url);
         if (!ninjaWebView.getSettings().getLoadsImagesAutomatically()) {
             ninjaWebView.getSettings().setLoadsImagesAutomatically(true);
         }
@@ -141,18 +152,8 @@ public class NinjaWebViewClient extends WebViewClient {
         builder.setCancelable(false);
         builder.setTitle(R.string.dialog_title_resubmission);
         builder.setMessage(R.string.dialog_content_resubmission);
-        builder.setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                resend.sendToTarget();
-            }
-        });
-        builder.setNegativeButton(R.string.dialog_button_negative, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dontResend.sendToTarget();
-            }
-        });
+        builder.setPositiveButton(R.string.dialog_button_positive, (dialog, which) -> resend.sendToTarget());
+        builder.setNegativeButton(R.string.dialog_button_negative, (dialog, which) -> dontResend.sendToTarget());
 
         builder.create().show();
     }
@@ -168,18 +169,8 @@ public class NinjaWebViewClient extends WebViewClient {
         builder.setCancelable(false);
         builder.setTitle(R.string.dialog_title_warning);
         builder.setMessage(R.string.dialog_content_ssl_error);
-        builder.setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                handler.proceed();
-            }
-        });
-        builder.setNegativeButton(R.string.dialog_button_negative, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                handler.cancel();
-            }
-        });
+        builder.setPositiveButton(R.string.dialog_button_positive, (dialog, which) -> handler.proceed());
+        builder.setNegativeButton(R.string.dialog_button_negative, (dialog, which) -> handler.cancel());
 
         AlertDialog dialog = builder.create();
         if (error.getPrimaryError() == SslError.SSL_UNTRUSTED) {
@@ -207,21 +198,13 @@ public class NinjaWebViewClient extends WebViewClient {
         passEdit.setTransformationMethod(new PasswordTransformationMethod());
         builder.setView(signInLayout);
 
-        builder.setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String user = userEdit.getText().toString().trim();
-                String pass = passEdit.getText().toString().trim();
-                handler.proceed(user, pass);
-            }
+        builder.setPositiveButton(R.string.dialog_button_positive, (dialog, which) -> {
+            String user = userEdit.getText().toString().trim();
+            String pass = passEdit.getText().toString().trim();
+            handler.proceed(user, pass);
         });
 
-        builder.setNegativeButton(R.string.dialog_button_negative, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                handler.cancel();
-            }
-        });
+        builder.setNegativeButton(R.string.dialog_button_negative, (dialog, which) -> handler.cancel());
 
         builder.create().show();
     }

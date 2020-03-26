@@ -3,6 +3,7 @@ package io.github.mthli.Ninja.Activity;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -10,6 +11,7 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,14 +19,19 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.Editable;
@@ -73,17 +80,27 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.daimajia.numberprogressbar.NumberProgressBar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.askerov.dynamicgrid.DynamicGridView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import io.github.mthli.Ninja.Browser.AdBlock;
 import io.github.mthli.Ninja.Browser.AlbumController;
@@ -111,11 +128,14 @@ import io.github.mthli.Ninja.View.RecordAdapter;
 import io.github.mthli.Ninja.View.SwipeToBoundListener;
 import io.github.mthli.Ninja.View.SwitcherPanel;
 import io.github.mthli.Ninja.downloaders.Activities.BuzzVideoDownloaderActivity;
+import io.github.mthli.Ninja.downloaders.Activities.FB_BrowserActivity;
 import io.github.mthli.Ninja.downloaders.Activities.FacebookDownloaderActivity;
+import io.github.mthli.Ninja.downloaders.Activities.FullscreenVideoPlayer;
 import io.github.mthli.Ninja.downloaders.Activities.InstagramDownloaderActivity;
 import io.github.mthli.Ninja.downloaders.Activities.PinterestDownloaderActivity;
 import io.github.mthli.Ninja.downloaders.Activities.TikTokDownloaderActivivty;
 import io.github.mthli.Ninja.downloaders.Activities.TwitterDownloaderActivity;
+import io.github.mthli.Ninja.downloaders.databases.DBHelper;
 import io.github.mthli.Ninja.downloaders.models.FbVideoDownloader;
 import io.github.mthli.Ninja.downloaders.models.InstagramVideoDownloader;
 import io.github.mthli.Ninja.downloaders.models.PinterestDownloader;
@@ -169,12 +189,17 @@ public class BrowserActivity extends Activity implements BrowserController {
     private FrameLayout contentFrame;
     private static Fragment activeFragment;
     private static BottomNavigationView navigation;
+
+
     private int Permission_Storage_Id = 2;
+    public static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 123;
     private static String outsideUrl = "";
+    private boolean result;
+    String fileN = null;
     private Button streamButton, downloadButton, cancelButton;
-    String urlString;
-    Dialog main_dialog;
-    WebView webo;
+    private Dialog main_dialog, downloadDialog;
+
+
 
     private class VideoCompletionListener implements MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
         @Override
@@ -231,15 +256,15 @@ public class BrowserActivity extends Activity implements BrowserController {
     }
 
     public static void openBrowserShowHistory(Context context) {
-        Intent intent = new Intent(context, BrowserActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        openHistoryFragment();
+//        Intent intent = new Intent(context, BrowserActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        context.startActivity(intent);
+//        try {
+//            Thread.sleep(200);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        //openHistoryFragment();
     }
 
 
@@ -258,8 +283,8 @@ public class BrowserActivity extends Activity implements BrowserController {
                 downloader.DownloadVideo();
 
             } else if (itsFacebookLink(url)) {
-                FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), url);
-                downloader.DownloadVideo();
+//                FbVideoDownloader downloader = new FbVideoDownloader(getApplicationContext(), url);
+//                downloader.DownloadVideo();
 
             } else if (itsBuzzLink(url)) {
                 TopBuzzDownloader downloader = new TopBuzzDownloader(getApplicationContext(), url);
@@ -376,6 +401,8 @@ public class BrowserActivity extends Activity implements BrowserController {
             hideAllPanel();
         }
 
+        result = checkPermission();
+
         handler = new Handler();
         runnable = new Runnable() {
             @Override
@@ -448,7 +475,213 @@ public class BrowserActivity extends Activity implements BrowserController {
         transaction.addToBackStack(null);
         transaction.commitAllowingStateLoss();
     }
+    public void newDownload(String url, String videoTitle) {
+        final BrowserActivity.DownloadTask downloadTask = new BrowserActivity.DownloadTask(this, videoTitle);
+        downloadTask.execute(url);
+    }
 
+    public class DownloadTask extends AsyncTask<String, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private String videoUrl="";
+        private String videoTitle="";
+
+        public DownloadTask(Context context, String videoTitle) {
+            this.context = context;
+            this.videoTitle =  videoTitle;
+
+        }
+
+        private NumberProgressBar bnp;
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                videoUrl = sUrl[0];
+                java.net.URL url = new URL(videoUrl);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + connection.getResponseCode()
+                            + " " + connection.getResponseMessage();
+                }
+
+                int fileLength = connection.getContentLength();
+
+                input = connection.getInputStream();
+                String dir = android.os.Environment.getExternalStorageDirectory().getPath() + "/Video Downloader/";
+                if (!new File(dir).exists() || !new File(dir).isDirectory()) {
+                    new File(dir).mkdirs();
+                }
+                fileN = "VDownloader" + UUID.randomUUID().toString().substring(0, 10) + ".mp4";
+                output = new FileOutputStream(dir + fileN);
+
+                byte data[] = new byte[4096];
+                long total = 0;
+                int count;
+                while ((count = input.read(data)) != -1) {
+                    if (isCancelled()) {
+                        input.close();
+                        return null;
+                    }
+                    total += count;
+                    if (fileLength > 0)
+                        publishProgress((int) (total * 100 / fileLength));
+                    output.write(data, 0, count);
+                }
+            } catch (Exception e) {
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null)
+                    connection.disconnect();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    getClass().getName());
+            mWakeLock.acquire();
+            LayoutInflater dialogLayout = LayoutInflater.from(BrowserActivity.this);
+            View DialogView = dialogLayout.inflate(R.layout.progress_dialog, null);
+            downloadDialog = new Dialog(BrowserActivity.this, R.style.MyDialogTheme);
+            downloadDialog.setContentView(DialogView);
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(downloadDialog.getWindow().getAttributes());
+            lp.width = (getResources().getDisplayMetrics().widthPixels);
+            lp.height = (int) (getResources().getDisplayMetrics().heightPixels * 0.65);
+            downloadDialog.getWindow().setAttributes(lp);
+
+            final Button cancel = DialogView.findViewById(R.id.cancel_btn);
+            cancel.setOnClickListener(v -> {
+                cancel(true);
+                downloadDialog.dismiss();
+
+            });
+
+            downloadDialog.setCancelable(false);
+            downloadDialog.setCanceledOnTouchOutside(false);
+            bnp = DialogView.findViewById(R.id.number_progress_bar);
+            bnp.setProgress(0);
+            bnp.setMax(100);
+            downloadDialog.show();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+            bnp.setProgress(progress[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+            downloadDialog.dismiss();
+            if (result != null)
+                Toast.makeText(context, "Download error: " + result, Toast.LENGTH_LONG).show();
+            else {
+                Toast.makeText(context, "File downloaded", Toast.LENGTH_SHORT).show();
+
+                String fileSize = new Date().toString();
+                DBHelper dbHelper = new DBHelper(context);
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put("url", videoUrl);
+                values.put("link", result);
+                values.put("title", videoTitle);
+                values.put("media_type", "video");
+                values.put("downloaded", "yes");
+                values.put("local_location", fileN);
+                values.put("link_type", "fb");
+                values.put("time", fileSize);
+                long newRowId = db.insert("link_lists", null, values);
+            }
+            MediaScannerConnection.scanFile(BrowserActivity.this,
+                    new String[]{Environment.getExternalStorageDirectory().getAbsolutePath() + "/FBDownloader/" + fileN}, null,
+                    (newpath, newuri) -> {
+                        Log.i("ExternalStorage", "Scanned " + newpath + ":");
+                        Log.i("ExternalStorage", "-> uri=" + newuri);
+                    });
+
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public boolean checkPermission() {
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    androidx.appcompat.app.AlertDialog.Builder alertBuilder = new androidx.appcompat.app.AlertDialog.Builder(this);
+                    alertBuilder.setCancelable(true);
+                    alertBuilder.setTitle("Permission necessary");
+                    alertBuilder.setMessage("Write Storage permission is necessary to Download Images and Videos!!!");
+                    alertBuilder.setPositiveButton(android.R.string.yes, (dialog, which) ->
+                            ActivityCompat.requestPermissions(this,
+                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_STORAGE));
+                    androidx.appcompat.app.AlertDialog alert = alertBuilder.create();
+                    alert.show();
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
+                }
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void checkAgain() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            androidx.appcompat.app.AlertDialog.Builder alertBuilder = new androidx.appcompat.app.AlertDialog.Builder(this);
+            alertBuilder.setCancelable(true);
+            alertBuilder.setTitle("Permission necessary");
+            alertBuilder.setMessage("Write Storage permission is necessary to Download Images and Videos!!!");
+            alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                public void onClick(DialogInterface dialog, int which) {
+                    ActivityCompat.requestPermissions(BrowserActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
+                }
+            });
+            androidx.appcompat.app.AlertDialog alert = alertBuilder.create();
+            alert.show();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
+        }
+    }
+
+
+
+    public void checkFolder() {
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FBDownloader/";
+        File dir = new File(path);
+        boolean isDirectoryCreated = dir.exists();
+        if (!isDirectoryCreated) {
+            isDirectoryCreated = dir.mkdir();
+        }
+        if (isDirectoryCreated) {
+            // do something\
+            Log.d("Folder", "Already Created");
+        }
+    }
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -1021,8 +1254,6 @@ public class BrowserActivity extends Activity implements BrowserController {
         Log.e("WEBVIEWJS", str);
         Bundle args = new Bundle();
         args.putString("vid_data", str);
-        urlString = str;
-        outsideUrl = str;
 
         runOnUiThread(() -> {
             // put your code to show dialog here.
@@ -1043,44 +1274,25 @@ public class BrowserActivity extends Activity implements BrowserController {
             main_dialog.show();
             streamButton.setOnClickListener(v -> {
                 Toast.makeText(BrowserActivity.this, "Streaming", Toast.LENGTH_SHORT).show();
-
-//                        Intent intent = new Intent(BrowserActivity.this, VideoPlayer.class);
-//                        intent.putExtra("video_url", urlString);
-//                        startActivity(intent);
+                Intent intent = new Intent(BrowserActivity.this, FullscreenVideoPlayer.class);
+                intent.putExtra("url", str);
+                intent.putExtra("title", getTitle());
+                startActivity(intent);
                 main_dialog.dismiss();
             });
             downloadButton.setOnClickListener(v -> {
                 Toast.makeText(BrowserActivity.this, "Downloading", Toast.LENGTH_SHORT).show();
-//                        newDownload(urlString);
+                newDownload(str, (String) getTitle());
                 main_dialog.dismiss();
             });
             cancelButton.setOnClickListener(v -> main_dialog.dismiss());
         });
-
+        return;
     }
 
-    private void setUpJavascript() {
-//        webo.getSettings().setJavaScriptEnabled(true);
-//        webo.addJavascriptInterface(this, "FBDownloader");
-//        webo.setWebViewClient(new WebViewClient() {
-//            @Override
-//            public void onPageFinished(WebView view, String url) {
-//                BrowserActivity.this.webo.loadUrl("javascript:(function() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\");');}}})()");
-//                Log.e("WEBVIEWFIN", url);
-//                super.onPageFinished(view, url);
-//            }
-//
-//            @Override
-//            public void onLoadResource(WebView view, String url) {
-//                BrowserActivity.this.webo.loadUrl("javascript:(function prepareVideo() { var el = document.querySelectorAll('div[data-sigil]');for(var i=0;i<el.length; i++){var sigil = el[i].dataset.sigil;if(sigil.indexOf('inlineVideo') > -1){delete el[i].dataset.sigil;console.log(i);var jsonData = JSON.parse(el[i].dataset.store);el[i].setAttribute('onClick', 'FBDownloader.processVideo(\"'+jsonData['src']+'\",\"'+jsonData['videoID']+'\");');}}})()");
-//                BrowserActivity.this.webo.loadUrl("javascript:( window.onload=prepareVideo;)()");
-//            }
-//        });
-//        CookieManager cookieManager = CookieManager.getInstance();
-//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-//            CookieSyncManager.createInstance(this);
-//        }
-//        cookieManager.setAcceptCookie(true);
+    private void setUpJavascript(NinjaWebView webView) {
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.addJavascriptInterface(this, "FBDownloader");
     }
 
 
@@ -1091,8 +1303,7 @@ public class BrowserActivity extends Activity implements BrowserController {
         webView.setAlbumCover(ViewUnit.capture(webView, dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
         webView.setAlbumTitle(title);
         ViewUnit.bound(this, webView);
-        webo = webView;
-        setUpJavascript();
+        setUpJavascript(webView);
 
         final View albumView = webView.getAlbumView();
         if (currentAlbumController != null && (currentAlbumController instanceof NinjaWebView) && resultMsg != null) {
@@ -1189,8 +1400,7 @@ public class BrowserActivity extends Activity implements BrowserController {
             webView.setAlbumTitle(getString(R.string.album_untitled));
             ViewUnit.bound(this, webView);
             webView.loadUrl(url);
-            webo = webView;
-            setUpJavascript();
+           setUpJavascript(webView);
 
             BrowserContainer.add(webView);
             final View albumView = webView.getAlbumView();
@@ -1297,8 +1507,7 @@ public class BrowserActivity extends Activity implements BrowserController {
 
         if (currentAlbumController instanceof NinjaWebView) {
             ((NinjaWebView) currentAlbumController).loadUrl(url);
-//            webo =((NinjaWebView) currentAlbumController);
-            setUpJavascript();
+            setUpJavascript(((NinjaWebView) currentAlbumController));
             updateOmnibox();
         } else if (currentAlbumController instanceof NinjaRelativeLayout) {
             NinjaWebView webView = new NinjaWebView(this);
@@ -1307,8 +1516,7 @@ public class BrowserActivity extends Activity implements BrowserController {
             webView.setAlbumCover(ViewUnit.capture(webView, dimen144dp, dimen108dp, false, Bitmap.Config.RGB_565));
             webView.setAlbumTitle(getString(R.string.album_untitled));
             ViewUnit.bound(this, webView);
-//            webo = webView;
-            setUpJavascript();
+            setUpJavascript(webView);
 
             int index = switcherContainer.indexOfChild(currentAlbumController.getAlbumView());
             currentAlbumController.deactivate();
@@ -1369,15 +1577,12 @@ public class BrowserActivity extends Activity implements BrowserController {
             inputBox.setDropDownVerticalOffset(getResources().getDimensionPixelOffset(R.dimen.layout_height_6dp));
         }
         inputBox.setDropDownWidth(ViewUnit.getWindowWidth(this));
-        inputBox.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String url = ((TextView) view.findViewById(R.id.complete_item_url)).getText().toString();
-                inputBox.setText(Html.fromHtml(BrowserUnit.urlWrapper(url)), EditText.BufferType.SPANNABLE);
-                inputBox.setSelection(url.length());
-                updateAlbum(url);
-                hideSoftInput(inputBox);
-            }
+        inputBox.setOnItemClickListener((parent, view, position, id) -> {
+            String url = ((TextView) view.findViewById(R.id.complete_item_url)).getText().toString();
+            inputBox.setText(Html.fromHtml(BrowserUnit.urlWrapper(url)), EditText.BufferType.SPANNABLE);
+            inputBox.setSelection(url.length());
+            updateAlbum(url);
+            hideSoftInput(inputBox);
         });
     }
 
@@ -1631,22 +1836,19 @@ public class BrowserActivity extends Activity implements BrowserController {
         }
 
         final String target = url;
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String s = list.get(position);
-                if (s.equals(getString(R.string.main_menu_new_tab))) { // New tab
-                    addAlbum(getString(R.string.album_untitled), target, false, null);
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_new_tab_successful);
-                } else if (s.equals(getString(R.string.main_menu_copy_link))) { // Copy link
-                    BrowserUnit.copyURL(BrowserActivity.this, target);
-                } else if (s.equals(getString(R.string.main_menu_save))) { // Save
-                    BrowserUnit.download(BrowserActivity.this, target, target, BrowserUnit.MIME_TYPE_IMAGE);
-                }
-
-                dialog.hide();
-                dialog.dismiss();
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String s = list.get(position);
+            if (s.equals(getString(R.string.main_menu_new_tab))) { // New tab
+                addAlbum(getString(R.string.album_untitled), target, false, null);
+                NinjaToast.show(BrowserActivity.this, R.string.toast_new_tab_successful);
+            } else if (s.equals(getString(R.string.main_menu_copy_link))) { // Copy link
+                BrowserUnit.copyURL(BrowserActivity.this, target);
+            } else if (s.equals(getString(R.string.main_menu_save))) { // Save
+                BrowserUnit.download(BrowserActivity.this, target, target, BrowserUnit.MIME_TYPE_IMAGE);
             }
+
+            dialog.hide();
+            dialog.dismiss();
         });
     }
 
@@ -1838,143 +2040,131 @@ public class BrowserActivity extends Activity implements BrowserController {
         final AlertDialog dialog = builder.create();
         dialog.show();
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                String s = stringList.get(position);
-                if (s.equals(array[0])) { // Go to top
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String s = stringList.get(position);
+            if (s.equals(array[0])) { // Go to top
+                NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
+                ObjectAnimator anim = ObjectAnimator.ofInt(ninjaWebView, "scrollY", ninjaWebView.getScrollY(), 0);
+                anim.setDuration(mediumAnimTime);
+                anim.start();
+            } else if (s.equals(array[1])) { // Add to home
+                NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
+                RecordAction action = new RecordAction(BrowserActivity.this);
+                action.open(true);
+                if (action.checkGridItem(ninjaWebView.getUrl())) {
+                    NinjaToast.show(BrowserActivity.this, R.string.toast_already_exist_in_home);
+                } else {
+                    String title = ninjaWebView.getTitle().trim();
+                    String url = ninjaWebView.getUrl().trim();
+                    Bitmap bitmap = ViewUnit.capture(ninjaWebView, dimen156dp, dimen117dp, false, Bitmap.Config.ARGB_8888);
+                    String filename = System.currentTimeMillis() + BrowserUnit.SUFFIX_PNG;
+                    int ordinal = action.listGrid().size();
+                    GridItem item = new GridItem(title, url, filename, ordinal);
+
+                    if (BrowserUnit.bitmap2File(BrowserActivity.this, bitmap, filename) && action.addGridItem(item)) {
+                        NinjaToast.show(BrowserActivity.this, R.string.toast_add_to_home_successful);
+                    } else {
+                        NinjaToast.show(BrowserActivity.this, R.string.toast_add_to_home_failed);
+                    }
+                }
+                action.close();
+            } else if (s.equals(array[2])) { // Find in page
+                hideSoftInput(inputBox);
+                showSearchPanel();
+            } else if (s.equals(array[3])) { // Screenshot
+                NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
+                new ScreenshotTask(BrowserActivity.this, ninjaWebView).execute();
+            } else if (s.equals(array[4])) { // Readability
+                String token = sp.getString(getString(R.string.sp_readability_token), null);
+                if (token == null || token.trim().isEmpty()) {
+                    NinjaToast.show(BrowserActivity.this, R.string.toast_token_empty);
+                } else {
                     NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
-                    ObjectAnimator anim = ObjectAnimator.ofInt(ninjaWebView, "scrollY", ninjaWebView.getScrollY(), 0);
-                    anim.setDuration(mediumAnimTime);
-                    anim.start();
-                } else if (s.equals(array[1])) { // Add to home
+                    Intent intent = new Intent(BrowserActivity.this, ReadabilityActivity.class);
+                    intent.putExtra(IntentUnit.URL, ninjaWebView.getUrl());
+                    startActivity(intent);
+                }
+            } else if (s.equals(array[5])) { // Share
+                if (!prepareRecord()) {
+                    NinjaToast.show(BrowserActivity.this, R.string.toast_share_failed);
+                } else {
                     NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
+                    IntentUnit.share(BrowserActivity.this, ninjaWebView.getTitle(), ninjaWebView.getUrl());
+                }
+            } else if (s.equals(array[6])) { // Relayout
+                NinjaRelativeLayout ninjaRelativeLayout = (NinjaRelativeLayout) currentAlbumController;
+                final DynamicGridView gridView = ninjaRelativeLayout.findViewById(R.id.home_grid);
+                final List<GridItem> gridList = ((GridAdapter) gridView.getAdapter()).getList();
+
+                omnibox.setVisibility(View.GONE);
+                relayoutOK.setVisibility(View.VISIBLE);
+
+                relayoutOK.setOnTouchListener((v, event) -> {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        relayoutOK.setTextColor(getResources().getColor(R.color.blue_500));
+                    } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                        relayoutOK.setTextColor(getResources().getColor(R.color.white));
+                    }
+
+                    return false;
+                });
+
+                relayoutOK.setOnClickListener(v -> {
+                    gridView.stopEditMode();
+                    relayoutOK.setVisibility(View.GONE);
+                    omnibox.setVisibility(View.VISIBLE);
+
                     RecordAction action = new RecordAction(BrowserActivity.this);
                     action.open(true);
-                    if (action.checkGridItem(ninjaWebView.getUrl())) {
-                        NinjaToast.show(BrowserActivity.this, R.string.toast_already_exist_in_home);
-                    } else {
-                        String title = ninjaWebView.getTitle().trim();
-                        String url = ninjaWebView.getUrl().trim();
-                        Bitmap bitmap = ViewUnit.capture(ninjaWebView, dimen156dp, dimen117dp, false, Bitmap.Config.ARGB_8888);
-                        String filename = System.currentTimeMillis() + BrowserUnit.SUFFIX_PNG;
-                        int ordinal = action.listGrid().size();
-                        GridItem item = new GridItem(title, url, filename, ordinal);
-
-                        if (BrowserUnit.bitmap2File(BrowserActivity.this, bitmap, filename) && action.addGridItem(item)) {
-                            NinjaToast.show(BrowserActivity.this, R.string.toast_add_to_home_successful);
-                        } else {
-                            NinjaToast.show(BrowserActivity.this, R.string.toast_add_to_home_failed);
-                        }
+                    action.clearGrid();
+                    for (GridItem item : gridList) {
+                        action.addGridItem(item);
                     }
                     action.close();
-                } else if (s.equals(array[2])) { // Find in page
-                    hideSoftInput(inputBox);
-                    showSearchPanel();
-                } else if (s.equals(array[3])) { // Screenshot
-                    NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
-                    new ScreenshotTask(BrowserActivity.this, ninjaWebView).execute();
-                } else if (s.equals(array[4])) { // Readability
-                    String token = sp.getString(getString(R.string.sp_readability_token), null);
-                    if (token == null || token.trim().isEmpty()) {
-                        NinjaToast.show(BrowserActivity.this, R.string.toast_token_empty);
-                    } else {
-                        NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
-                        Intent intent = new Intent(BrowserActivity.this, ReadabilityActivity.class);
-                        intent.putExtra(IntentUnit.URL, ninjaWebView.getUrl());
-                        startActivity(intent);
+                    NinjaToast.show(BrowserActivity.this, R.string.toast_relayout_successful);
+                });
+
+                gridView.setOnDragListener(new DynamicGridView.OnDragListener() {
+                    private GridItem dragItem;
+
+                    @Override
+                    public void onDragStarted(int position) {
+                        dragItem = gridList.get(position);
                     }
-                } else if (s.equals(array[5])) { // Share
-                    if (!prepareRecord()) {
-                        NinjaToast.show(BrowserActivity.this, R.string.toast_share_failed);
-                    } else {
-                        NinjaWebView ninjaWebView = (NinjaWebView) currentAlbumController;
-                        IntentUnit.share(BrowserActivity.this, ninjaWebView.getTitle(), ninjaWebView.getUrl());
+
+                    @Override
+                    public void onDragPositionsChanged(int oldPosition, int newPosition) {
+                        if (oldPosition < newPosition) {
+                            for (int i = newPosition; i > oldPosition; i--) {
+                                GridItem item = gridList.get(i);
+                                item.setOrdinal(i - 1);
+                            }
+                        } else if (oldPosition > newPosition) {
+                            for (int i = newPosition; i < oldPosition; i++) {
+                                GridItem item = gridList.get(i);
+                                item.setOrdinal(i + 1);
+                            }
+                        }
+                        dragItem.setOrdinal(newPosition);
+
+                        Collections.sort(gridList, (first, second) -> {
+                            if (first.getOrdinal() < second.getOrdinal()) {
+                                return -1;
+                            } else if (first.getOrdinal() > second.getOrdinal()) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        });
                     }
-                } else if (s.equals(array[6])) { // Relayout
-                    NinjaRelativeLayout ninjaRelativeLayout = (NinjaRelativeLayout) currentAlbumController;
-                    final DynamicGridView gridView = ninjaRelativeLayout.findViewById(R.id.home_grid);
-                    final List<GridItem> gridList = ((GridAdapter) gridView.getAdapter()).getList();
-
-                    omnibox.setVisibility(View.GONE);
-                    relayoutOK.setVisibility(View.VISIBLE);
-
-                    relayoutOK.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View v, MotionEvent event) {
-                            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                                relayoutOK.setTextColor(getResources().getColor(R.color.blue_500));
-                            } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                                relayoutOK.setTextColor(getResources().getColor(R.color.white));
-                            }
-
-                            return false;
-                        }
-                    });
-
-                    relayoutOK.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            gridView.stopEditMode();
-                            relayoutOK.setVisibility(View.GONE);
-                            omnibox.setVisibility(View.VISIBLE);
-
-                            RecordAction action = new RecordAction(BrowserActivity.this);
-                            action.open(true);
-                            action.clearGrid();
-                            for (GridItem item : gridList) {
-                                action.addGridItem(item);
-                            }
-                            action.close();
-                            NinjaToast.show(BrowserActivity.this, R.string.toast_relayout_successful);
-                        }
-                    });
-
-                    gridView.setOnDragListener(new DynamicGridView.OnDragListener() {
-                        private GridItem dragItem;
-
-                        @Override
-                        public void onDragStarted(int position) {
-                            dragItem = gridList.get(position);
-                        }
-
-                        @Override
-                        public void onDragPositionsChanged(int oldPosition, int newPosition) {
-                            if (oldPosition < newPosition) {
-                                for (int i = newPosition; i > oldPosition; i--) {
-                                    GridItem item = gridList.get(i);
-                                    item.setOrdinal(i - 1);
-                                }
-                            } else if (oldPosition > newPosition) {
-                                for (int i = newPosition; i < oldPosition; i++) {
-                                    GridItem item = gridList.get(i);
-                                    item.setOrdinal(i + 1);
-                                }
-                            }
-                            dragItem.setOrdinal(newPosition);
-
-                            Collections.sort(gridList, new Comparator<GridItem>() {
-                                @Override
-                                public int compare(GridItem first, GridItem second) {
-                                    if (first.getOrdinal() < second.getOrdinal()) {
-                                        return -1;
-                                    } else if (first.getOrdinal() > second.getOrdinal()) {
-                                        return 1;
-                                    } else {
-                                        return 0;
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    gridView.startEditMode();
-                } else if (s.equals(array[7])) { // Quit
-                    finish();
-                }
-
-                dialog.hide();
-                dialog.dismiss();
+                });
+                gridView.startEditMode();
+            } else if (s.equals(array[7])) { // Quit
+                finish();
             }
+
+            dialog.hide();
+            dialog.dismiss();
         });
 
         return true;
@@ -2001,29 +2191,26 @@ public class BrowserActivity extends Activity implements BrowserController {
         final AlertDialog dialog = builder.create();
         dialog.show();
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String s = stringList.get(position);
-                if (s.equals(array[0])) { // New tab
-                    addAlbum(getString(R.string.album_untitled), gridItem.getURL(), false, null);
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_new_tab_successful);
-                } else if (s.equals(array[3])) { // Edit
-                    showEditDialog(gridItem);
-                } else if (s.equals(array[4])) { // Delete
-                    RecordAction action = new RecordAction(BrowserActivity.this);
-                    action.open(true);
-                    action.deleteGridItem(gridItem);
-                    action.close();
-                    BrowserActivity.this.deleteFile(gridItem.getFilename());
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String s = stringList.get(position);
+            if (s.equals(array[0])) { // New tab
+                addAlbum(getString(R.string.album_untitled), gridItem.getURL(), false, null);
+                NinjaToast.show(BrowserActivity.this, R.string.toast_new_tab_successful);
+            } else if (s.equals(array[3])) { // Edit
+                showEditDialog(gridItem);
+            } else if (s.equals(array[4])) { // Delete
+                RecordAction action = new RecordAction(BrowserActivity.this);
+                action.open(true);
+                action.deleteGridItem(gridItem);
+                action.close();
+                BrowserActivity.this.deleteFile(gridItem.getFilename());
 
-                    initHomeGrid((NinjaRelativeLayout) currentAlbumController, true);
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_delete_successful);
-                }
-
-                dialog.hide();
-                dialog.dismiss();
+                initHomeGrid((NinjaRelativeLayout) currentAlbumController, true);
+                NinjaToast.show(BrowserActivity.this, R.string.toast_delete_successful);
             }
+
+            dialog.hide();
+            dialog.dismiss();
         });
     }
 
@@ -2105,35 +2292,29 @@ public class BrowserActivity extends Activity implements BrowserController {
         hideSoftInput(inputBox);
         showSoftInput(editText);
 
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE) {
-                    return false;
-                }
-
-                String text = editText.getText().toString().trim();
-                if (text.isEmpty()) {
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
-                    return true;
-                }
-
-                RecordAction action = new RecordAction(BrowserActivity.this);
-                action.open(true);
-                gridItem.setTitle(text);
-                action.updateGridItem(gridItem);
-                action.close();
-
-                hideSoftInput(editText);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.hide();
-                        dialog.dismiss();
-                    }
-                }, longAnimTime);
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE) {
                 return false;
             }
+
+            String text = editText.getText().toString().trim();
+            if (text.isEmpty()) {
+                NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
+                return true;
+            }
+
+            RecordAction action = new RecordAction(BrowserActivity.this);
+            action.open(true);
+            gridItem.setTitle(text);
+            action.updateGridItem(gridItem);
+            action.close();
+
+            hideSoftInput(editText);
+            new Handler().postDelayed(() -> {
+                dialog.hide();
+                dialog.dismiss();
+            }, longAnimTime);
+            return false;
         });
     }
 
@@ -2155,36 +2336,30 @@ public class BrowserActivity extends Activity implements BrowserController {
         hideSoftInput(inputBox);
         showSoftInput(editText);
 
-        editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE) {
-                    return false;
-                }
-
-                String text = editText.getText().toString().trim();
-                if (text.isEmpty()) {
-                    NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
-                    return true;
-                }
-
-                RecordAction action = new RecordAction(BrowserActivity.this);
-                action.open(true);
-                record.setTitle(text);
-                action.updateBookmark(record);
-                action.close();
-
-                recordAdapter.notifyDataSetChanged();
-                hideSoftInput(editText);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.hide();
-                        dialog.dismiss();
-                    }
-                }, longAnimTime);
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE) {
                 return false;
             }
+
+            String text = editText.getText().toString().trim();
+            if (text.isEmpty()) {
+                NinjaToast.show(BrowserActivity.this, R.string.toast_input_empty);
+                return true;
+            }
+
+            RecordAction action = new RecordAction(BrowserActivity.this);
+            action.open(true);
+            record.setTitle(text);
+            action.updateBookmark(record);
+            action.close();
+
+            recordAdapter.notifyDataSetChanged();
+            hideSoftInput(editText);
+            new Handler().postDelayed(() -> {
+                dialog.hide();
+                dialog.dismiss();
+            }, longAnimTime);
+            return false;
         });
     }
 
@@ -2257,18 +2432,8 @@ public class BrowserActivity extends Activity implements BrowserController {
                 new androidx.appcompat.app.AlertDialog.Builder(this)
                         .setTitle("Storage Permission Needed")
                         .setMessage("Storage Permission is Needed to Access External Files")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                ActivityCompat.requestPermissions(BrowserActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Permission_Storage_Id);
-                            }
-                        })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
+                        .setPositiveButton("OK", (dialog, which) -> ActivityCompat.requestPermissions(BrowserActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Permission_Storage_Id))
+                        .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                         .create().show();
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Permission_Storage_Id);
@@ -2309,28 +2474,26 @@ public class BrowserActivity extends Activity implements BrowserController {
                     new androidx.appcompat.app.AlertDialog.Builder(this)
                             .setTitle("Storage Permission Needed")
                             .setMessage("Storage Permission is Compulsory for this Feature \r\nGrant Now?")
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent();
-                                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                    intent.setData(uri);
-                                    startActivity(intent);
-                                    Toast.makeText(BrowserActivity.this, "Grant Permission from Permission Tab", Toast.LENGTH_SHORT).show();
-                                }
+                            .setPositiveButton("OK", (dialog, which) -> {
+                                Intent intent = new Intent();
+                                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivity(intent);
+                                Toast.makeText(BrowserActivity.this, "Grant Permission from Permission Tab", Toast.LENGTH_SHORT).show();
                             })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            })
+                            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
                             .create().show();
 
                 }
             }
+        }else if (requestCode == MY_PERMISSIONS_REQUEST_WRITE_STORAGE){
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkFolder();
+            } else {
+                //code for deny
+                checkAgain();
+            }
         }
     }
-
 }
